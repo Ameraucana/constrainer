@@ -17,15 +17,19 @@ class BaseWidgetState extends State<BaseWidget> {
         future: FileIO.readSave(),
         builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return Provider(
+            return ChangeNotifierProvider(
               create: (context) => MainState(snapshot.data!),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  NewTaskBox(),
-                  TaskList(),
-                ],
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    NewTaskBox(),
+                    Expanded(child: TaskList()),
+                  ],
+                ),
               ),
             );
           } else {

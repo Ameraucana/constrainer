@@ -14,8 +14,9 @@ class _NewTaskBoxState extends State<NewTaskBox> {
   TextEditingController _textEditingController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return Consumer2<FocusNode, MainState>(
-      builder: (context, rootNode, appState, _) => RawKeyboardListener(
+    return Consumer<FocusNode>(builder: (context, rootNode, _) {
+      MainState appState = Provider.of<MainState>(context);
+      return RawKeyboardListener(
         focusNode: FocusNode(),
         onKey: (RawKeyEvent event) {
           if (event.logicalKey == LogicalKeyboardKey.enter &&
@@ -38,8 +39,8 @@ class _NewTaskBoxState extends State<NewTaskBox> {
           decoration: InputDecoration(hintText: "Name of new task"),
           maxLines: 1,
         ),
-      ),
-    );
+      );
+    });
   }
 
   @override
