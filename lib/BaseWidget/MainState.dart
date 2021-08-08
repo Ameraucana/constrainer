@@ -1,3 +1,5 @@
+import 'package:constrainer/BaseWidget/FileIO.dart';
+
 class MainState {
   Map<String, int> content = {};
   MainState(Map<String, int> fileContent) : content = fileContent;
@@ -7,13 +9,20 @@ class MainState {
       ..sort((a, b) => a.msToDeadline.compareTo(b.msToDeadline));
   }
 
-  void visitedTask(String key) {
+  Future<void> visitedTask(String key) async {
     if (content.containsKey(key)) {
       content[key] =
           DateTime.now().add(Duration(days: 21)).millisecondsSinceEpoch;
+      await FileIO.writeSave(this);
     } else {
       throw "Task by name '$key' does not exist";
     }
+  }
+
+  Future<void> add(String name) async {
+    content.putIfAbsent(name,
+        () => DateTime.now().add(Duration(days: 21)).millisecondsSinceEpoch);
+    await FileIO.writeSave(this);
   }
 }
 

@@ -10,13 +10,25 @@ class FileIO {
     return File(path.join(docs.path, "constrainer", "save.json"));
   }
 
-  static Future<Map<String, int>> readSave() async {
-    File targetPath = await _filePath;
-    String raw = await targetPath.readAsString();
-    return jsonDecode(raw);
+  static Future<void> _ensureSaveExists() async {
+    File file = await _filePath;
+    bool fileExists = await file.exists();
+    if (!fileExists) {
+      await file.parent.create(recursive: true);
+      await file.writeAsString(jsonEncode(<String, int>{}));
+    }
   }
 
-  static void writeSave(MainState state) async {
+  static Future<Map<String, int>> readSave() async {
+    await _ensureSaveExists();
+    File targetPath = await _filePath;
+    String raw = await targetPath.readAsString();
+    print(jsonDecode(raw));
+    return Map<String, int>.from(jsonDecode(raw));
+  }
+
+  static Future<void> writeSave(MainState state) async {
+    await _ensureSaveExists();
     File targetPath = await _filePath;
     await targetPath.writeAsString(jsonEncode(state.content));
   }
