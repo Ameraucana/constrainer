@@ -31,6 +31,10 @@ class _NewTaskBoxState extends State<NewTaskBox> {
               _textEditingController.text = "";
             });
             rootNode.requestFocus();
+          } else if (event.logicalKey == LogicalKeyboardKey.backspace) {
+            setState(() {
+              _textEditingController.text = "";
+            });
           }
         },
         child: TextField(
