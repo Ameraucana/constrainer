@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 class FileIO {
   static Future<File> get _filePath async {
     Directory docs = await getApplicationDocumentsDirectory();
-    return File(path.join(docs.path, "constrainer", "save.json"));
+    return File(path.join(docs.path, "constrainer_data", "save.json"));
   }
 
   static Future<void> _ensureSaveExists() async {
