@@ -14,7 +14,9 @@ class _TaskListState extends State<TaskList> {
   Widget build(BuildContext context) {
     return Consumer<MainState>(builder: (context, appState, _) {
       List<Task> tasks = appState.getSortedList();
-      if (tasks[0].msToDeadline.isNegative || tasks[0].msToDeadline == 0) {
+      if (tasks.length == 0) {
+        return Text("There's nothing here");
+      } else if (tasks[0].msToDeadline <= 0) {
         return tasks[0].asContainer(appState.renewedTask);
       } else {
         return ListView.separated(
