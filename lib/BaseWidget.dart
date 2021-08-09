@@ -27,6 +27,7 @@ class BaseWidgetState extends State<BaseWidget> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     NewTaskBox(),
+                    SizedBox(height: 5),
                     Expanded(child: TaskList()),
                   ],
                 ),
