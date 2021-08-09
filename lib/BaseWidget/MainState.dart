@@ -2,7 +2,7 @@ import 'package:constrainer/BaseWidget/FileIO.dart';
 import 'package:flutter/material.dart';
 
 class MainState with ChangeNotifier {
-  Map<String, int> content = {}; //TODO (MAYBE): make times tick down in-app
+  Map<String, int> content = {};
   MainState(Map<String, int> fileContent) : content = fileContent;
 
   List<Task> getSortedList() {
@@ -115,5 +115,9 @@ String formatter(int msToDeadline) {
   workingMs -= hours * Duration.millisecondsPerHour;
 
   int minutes = (workingMs / Duration.millisecondsPerMinute).floor();
-  return "${weeks > 0 ? weeks == 1 ? '$weeks week ' : '$weeks weeks ' : ''}${days > 0 ? days == 1 ? '$days day ' : '$days days ' : ''}${hours > 0 ? hours == 1 ? '$hours hour ' : '$hours hours ' : ''}${minutes == 1 ? '$minutes minute' : '$minutes minutes'}";
+  workingMs -= minutes * Duration.millisecondsPerMinute;
+
+  int seconds = (workingMs / Duration.millisecondsPerSecond).floor();
+
+  return "${weeks > 0 ? weeks == 1 ? '$weeks week ' : '$weeks weeks ' : ''}${days > 0 ? days == 1 ? '$days day ' : '$days days ' : ''}${hours > 0 ? hours == 1 ? '$hours hour ' : '$hours hours ' : ''}${minutes > 0 ? minutes == 1 ? '$minutes minute ' : '$minutes minutes ' : ''}${seconds == 1 ? '$seconds second' : '$seconds seconds'}";
 }
