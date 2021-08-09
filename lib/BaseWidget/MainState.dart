@@ -2,7 +2,7 @@ import 'package:constrainer/BaseWidget/FileIO.dart';
 import 'package:flutter/material.dart';
 
 class MainState with ChangeNotifier {
-  Map<String, int> content = {};
+  Map<String, int> content = {}; //TODO (MAYBE): make times tick down in-app
   MainState(Map<String, int> fileContent) : content = fileContent;
 
   List<Task> getSortedList() {
@@ -10,7 +10,7 @@ class MainState with ChangeNotifier {
       ..sort((a, b) => a.msToDeadline.compareTo(b.msToDeadline));
   }
 
-  Future<void> visitedTask(String key) async {
+  Future<void> renewedTask(String key) async {
     if (content.containsKey(key)) {
       content[key] =
           DateTime.now().add(Duration(days: 21)).millisecondsSinceEpoch;
@@ -27,6 +27,12 @@ class MainState with ChangeNotifier {
     notifyListeners();
     await FileIO.writeSave(this);
   }
+
+  Future<void> remove(String name) async {
+    content.remove(name);
+    notifyListeners();
+    await FileIO.writeSave(this);
+  }
 }
 
 class Task {
@@ -36,42 +42,78 @@ class Task {
   String name;
   int msToDeadline;
 
-  ListTile asTile() {
-    String formatter() {
-      int workingMs = msToDeadline;
-      int weeks = (workingMs / Duration.millisecondsPerDay / 7).floor();
-      workingMs -= weeks * Duration.millisecondsPerDay * 7;
-      int days = (workingMs / Duration.millisecondsPerDay).floor();
-      workingMs -= days * Duration.microsecondsPerDay;
+  Container asContainer(void Function(String) renewCallback) {
+    return Container(
+        color: Colors.red,
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text("$name is past due (${formatter(-msToDeadline)})."),
+              Row(),
+              SizedBox(height: 15),
+              ElevatedButton(
+                child: Text("Renew"),
+                onPressed: () => renewCallback(name),
+              )
+            ]));
+  }
 
-      if (weeks >= 1) {
-        return "$weeks weeks $days days";
-      } else if (days >= 3) {
-        return "$days days";
-      }
-
-      int hours = (workingMs / Duration.millisecondsPerHour).floor();
-      workingMs -= hours * Duration.millisecondsPerHour;
-
-      if (days >= 1) {
-        return "$days days $hours hours";
-      } else if (hours >= 1) {
-        return "$hours hours";
-      }
-
-      int minutes = (workingMs / Duration.millisecondsPerMinute).floor();
-      return "$minutes minutes";
-    }
-
+  ListTile asTile(void Function(String) renewCallback,
+      void Function(String) deleteCallback) {
+    List<Color> dangerLevelColors = getDangerLevelColor(msToDeadline);
     return ListTile(
       title: Text(
         name,
         maxLines: 1,
+        style: TextStyle(
+          color: dangerLevelColors[1],
+        ),
       ),
       subtitle: Text(
-        formatter(),
+        formatter(msToDeadline),
         maxLines: 1,
+        style:
+            TextStyle(color: dangerLevelColors[1], fontWeight: FontWeight.w400),
       ),
+      leading: ElevatedButton(
+        child: Text("Renew"),
+        onPressed: () => renewCallback(name),
+      ),
+      trailing: OutlinedButton(
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.white70),
+            foregroundColor: MaterialStateProperty.all(Colors.red)),
+        child: Text("Delete"),
+        onPressed: () => deleteCallback(name),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      tileColor: dangerLevelColors[0],
     );
   }
+}
+
+List<Color> getDangerLevelColor(int msToDeadline) {
+  if ((msToDeadline / Duration.millisecondsPerDay / 7).floor() >= 2) {
+    return [Colors.green, Colors.white];
+  } else if ((msToDeadline / Duration.millisecondsPerDay / 7).floor() >= 1) {
+    return [Colors.yellow, Colors.black];
+  } else {
+    return [Colors.red, Colors.white];
+  }
+}
+
+String formatter(int msToDeadline) {
+  int workingMs = msToDeadline;
+  int weeks = (workingMs / Duration.millisecondsPerDay / 7).floor();
+  workingMs -= weeks * Duration.millisecondsPerDay * 7;
+
+  int days = (workingMs / Duration.millisecondsPerDay).floor();
+  workingMs -= days * Duration.millisecondsPerDay;
+
+  int hours = (workingMs / Duration.millisecondsPerHour).floor();
+  workingMs -= hours * Duration.millisecondsPerHour;
+
+  int minutes = (workingMs / Duration.millisecondsPerMinute).floor();
+  return "${weeks > 0 ? weeks == 1 ? '$weeks week ' : '$weeks weeks ' : ''}${days > 0 ? days == 1 ? '$days day ' : '$days days ' : ''}${hours > 0 ? hours == 1 ? '$hours hour ' : '$hours hours ' : ''}${minutes == 1 ? '$minutes minute' : '$minutes minutes'}";
 }
