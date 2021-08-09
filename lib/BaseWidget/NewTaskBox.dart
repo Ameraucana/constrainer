@@ -37,11 +37,19 @@ class _NewTaskBoxState extends State<NewTaskBox> {
             });
           }
         },
-        child: TextField(
-          focusNode: FocusNode(),
-          controller: _textEditingController,
-          decoration: InputDecoration(hintText: "Name of new task"),
-          maxLines: 1,
+        child: Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: Theme.of(context).cardColor),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              focusNode: FocusNode(),
+              controller: _textEditingController,
+              decoration: InputDecoration(hintText: "Name of new task"),
+              maxLines: 1,
+            ),
+          ),
         ),
       );
     });
