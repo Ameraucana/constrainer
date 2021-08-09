@@ -12,14 +12,18 @@ class TaskList extends StatefulWidget {
 class _TaskListState extends State<TaskList> {
   @override
   Widget build(BuildContext context) {
-    return ListTileTheme(
-      tileColor: Theme.of(context).cardColor,
-      child: Consumer<MainState>(
-          builder: (context, appState, _) => ListView(
-              children: appState
-                  .getSortedList()
-                  .map((task) => task.asTile())
-                  .toList())),
-    );
+    return Consumer<MainState>(builder: (context, appState, _) {
+      List<Task> tasks = appState.getSortedList();
+      if (tasks[0].msToDeadline.isNegative || tasks[0].msToDeadline == 0) {
+        return tasks[0].asContainer(appState.renewedTask);
+      } else {
+        return ListView.separated(
+          itemBuilder: (context, index) =>
+              tasks[index].asTile(appState.renewedTask, appState.remove),
+          separatorBuilder: (context, index) => SizedBox(height: 10),
+          itemCount: tasks.length,
+        );
+      }
+    });
   }
 }
