@@ -127,7 +127,7 @@ class Task {
                           onEditingComplete: () {
                             int? value =
                                 int.tryParse(_dialogTextController.text);
-                            if (value != null) {
+                            if (value != null && value != deadlineTerm) {
                               deadlineTerm = value;
                               appState.changeDeadlineTerm(name, deadlineTerm);
                             }
