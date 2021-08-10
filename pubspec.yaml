@@ -1,5 +1,5 @@
 name: constrainer
-description: A new Flutter project.
+description: Impose limits on how long I can go without doing some thing
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
