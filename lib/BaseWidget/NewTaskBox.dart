@@ -14,64 +14,52 @@ class _NewTaskBoxState extends State<NewTaskBox> {
   TextEditingController _nameTextController = TextEditingController();
   TextEditingController _termTextController = TextEditingController();
 
+  void submit(MainState appState, FocusNode rootNode) {
+    if (_nameTextController.text.isNotEmpty) {
+      setState(() {
+        appState.add(_nameTextController.text,
+            int.tryParse(_termTextController.text) ?? 21);
+        _nameTextController.text = "";
+        _termTextController.text = "";
+      });
+      rootNode.requestFocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     FocusNode _nameNode = FocusNode(), _termNode = FocusNode();
     return Consumer<FocusNode>(builder: (context, rootNode, _) {
       MainState appState = Provider.of<MainState>(context);
-      return RawKeyboardListener(
-        focusNode: FocusNode(),
-        onKey: (RawKeyEvent event) {
-          if (event.logicalKey == LogicalKeyboardKey.enter &&
-              _nameTextController.text.isNotEmpty) {
-            setState(() {
-              appState.add(_nameTextController.text,
-                  int.tryParse(_termTextController.text) ?? 21);
-              _nameTextController.text = "";
-              _termTextController.text = "";
-            });
-            rootNode.requestFocus();
-          } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-            setState(() {
-              _nameTextController.text = "";
-            });
-            rootNode.requestFocus();
-          } else if (event.logicalKey == LogicalKeyboardKey.backspace) {
-            setState(() {
-              _nameTextController.text = "";
-            });
-          }
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: Theme.of(context).cardColor),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    focusNode: _nameNode,
-                    controller: _nameTextController,
-                    decoration: InputDecoration(hintText: "Name of new task"),
-                    onTap: () => _nameNode.requestFocus(),
-                    maxLines: 1,
-                  ),
+      return Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Theme.of(context).cardColor),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  focusNode: _nameNode,
+                  controller: _nameTextController,
+                  decoration: InputDecoration(hintText: "Name of new task"),
+                  onEditingComplete: () => submit(appState, rootNode),
+                  maxLines: 1,
                 ),
-                SizedBox(width: 5),
-                Expanded(
-                  child: TextField(
-                    focusNode: _termNode,
-                    controller: _termTextController,
-                    decoration: InputDecoration(
-                        hintText: "Day count to deadline (default is 21)"),
-                    onTap: () => _termNode.requestFocus(),
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
+              ),
+              SizedBox(width: 5),
+              Expanded(
+                child: TextField(
+                  focusNode: _termNode,
+                  controller: _termTextController,
+                  decoration: InputDecoration(
+                      hintText: "Day count to deadline (default is 21)"),
+                  onEditingComplete: () => submit(appState, rootNode),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
