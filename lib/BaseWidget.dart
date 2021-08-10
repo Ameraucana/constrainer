@@ -15,13 +15,13 @@ class BaseWidgetState extends State<BaseWidget> {
   Widget build(context) {
     return FutureBuilder(
         future: FileIO.readSave(),
-        builder: (context, AsyncSnapshot<Map<String, int>> snapshot) {
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return ChangeNotifierProvider(
               create: (context) => MainState(snapshot.data!),
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,

@@ -11,30 +11,33 @@ class NewTaskBox extends StatefulWidget {
 }
 
 class _NewTaskBoxState extends State<NewTaskBox> {
-  TextEditingController _textEditingController = TextEditingController();
+  TextEditingController _nameTextController = TextEditingController();
+  TextEditingController _termTextController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    //TODO: implement variable deadlines
     return Consumer<FocusNode>(builder: (context, rootNode, _) {
       MainState appState = Provider.of<MainState>(context);
       return RawKeyboardListener(
         focusNode: FocusNode(),
         onKey: (RawKeyEvent event) {
           if (event.logicalKey == LogicalKeyboardKey.enter &&
-              _textEditingController.text.isNotEmpty) {
+              _nameTextController.text.isNotEmpty) {
             setState(() {
-              appState.add(_textEditingController.text);
-              _textEditingController.text = "";
+              appState.add(_nameTextController.text,
+                  int.tryParse(_termTextController.text) ?? 21);
+              _nameTextController.text = "";
+              _termTextController.text = "";
             });
             rootNode.requestFocus();
           } else if (event.logicalKey == LogicalKeyboardKey.escape) {
             setState(() {
-              _textEditingController.text = "";
+              _nameTextController.text = "";
             });
             rootNode.requestFocus();
           } else if (event.logicalKey == LogicalKeyboardKey.backspace) {
             setState(() {
-              _textEditingController.text = "";
+              _nameTextController.text = "";
             });
           }
         },
@@ -44,11 +47,26 @@ class _NewTaskBoxState extends State<NewTaskBox> {
               color: Theme.of(context).cardColor),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              focusNode: FocusNode(),
-              controller: _textEditingController,
-              decoration: InputDecoration(hintText: "Name of new task"),
-              maxLines: 1,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    focusNode: FocusNode(),
+                    controller: _nameTextController,
+                    decoration: InputDecoration(hintText: "Name of new task"),
+                    maxLines: 1,
+                  ),
+                ),
+                SizedBox(width: 5),
+                Expanded(
+                  child: TextField(
+                    controller: _termTextController,
+                    decoration: InputDecoration(
+                        hintText: "Day count to deadline (21 default)"),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -58,7 +76,7 @@ class _NewTaskBoxState extends State<NewTaskBox> {
 
   @override
   void dispose() {
-    _textEditingController.dispose();
+    _nameTextController.dispose();
     super.dispose();
   }
 }

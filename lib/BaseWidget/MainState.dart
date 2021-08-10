@@ -2,8 +2,8 @@ import 'package:constrainer/BaseWidget/FileIO.dart';
 import 'package:flutter/material.dart';
 
 class MainState with ChangeNotifier {
-  Map<String, int> content = {};
-  MainState(Map<String, int> fileContent) : content = fileContent;
+  Map<String, dynamic> content = {};
+  MainState(Map<String, dynamic> fileContent) : content = fileContent;
 
   List<Task> getSortedList() {
     return content.entries.map((entry) => Task(entry)).toList()
@@ -12,8 +12,9 @@ class MainState with ChangeNotifier {
 
   Future<void> renewedTask(String key) async {
     if (content.containsKey(key)) {
-      content[key] =
-          DateTime.now().add(Duration(days: 21)).millisecondsSinceEpoch;
+      content[key]!['deadlineAsMs'] = DateTime.now()
+          .add(Duration(days: content[key]!['deadlineTerm']!))
+          .millisecondsSinceEpoch;
       notifyListeners();
       await FileIO.writeSave(this);
     } else {
@@ -21,9 +22,15 @@ class MainState with ChangeNotifier {
     }
   }
 
-  Future<void> add(String name) async {
-    content.putIfAbsent(name,
-        () => DateTime.now().add(Duration(days: 21)).millisecondsSinceEpoch);
+  Future<void> add(String name, int deadlineTerm) async {
+    content.putIfAbsent(
+        name,
+        () => <String, int>{
+              "deadlineAsMs": DateTime.now()
+                  .add(Duration(days: deadlineTerm))
+                  .millisecondsSinceEpoch,
+              "deadlineTerm": deadlineTerm
+            });
     notifyListeners();
     await FileIO.writeSave(this);
   }
@@ -36,11 +43,14 @@ class MainState with ChangeNotifier {
 }
 
 class Task {
-  Task(MapEntry<String, int> entry)
+  Task(MapEntry<String, dynamic> entry)
       : name = entry.key,
-        msToDeadline = entry.value - DateTime.now().millisecondsSinceEpoch;
+        msToDeadline = entry.value['deadlineAsMs']! -
+            DateTime.now().millisecondsSinceEpoch,
+        deadlineTerm = entry.value['deadlineTerm']!;
   String name;
   int msToDeadline;
+  int deadlineTerm;
 
   Container asContainer(void Function(String) renewCallback) {
     return Container(
@@ -61,7 +71,7 @@ class Task {
 
   ListTile asTile(void Function(String) renewCallback,
       void Function(String) deleteCallback) {
-    List<Color> dangerLevelColors = getDangerLevelColor(msToDeadline);
+    List<Color> dangerLevelColors = getDangerLevelColor();
     return ListTile(
       title: Text(
         name,
@@ -91,15 +101,16 @@ class Task {
       tileColor: dangerLevelColors[0],
     );
   }
-}
 
-List<Color> getDangerLevelColor(int msToDeadline) {
-  if ((msToDeadline / Duration.millisecondsPerDay / 7).floor() >= 2) {
-    return [Colors.green, Colors.white];
-  } else if ((msToDeadline / Duration.millisecondsPerDay / 7).floor() >= 1) {
-    return [Colors.yellow, Colors.black];
-  } else {
-    return [Colors.red, Colors.white];
+  List<Color> getDangerLevelColor() {
+    if (msToDeadline >= 2 * (deadlineTerm * Duration.millisecondsPerDay) / 3) {
+      return [Colors.green, Colors.white];
+    } else if (msToDeadline >=
+        (deadlineTerm * Duration.millisecondsPerDay) / 3) {
+      return [Colors.yellow, Colors.black];
+    } else {
+      return [Colors.red, Colors.white];
+    }
   }
 }
 

@@ -15,16 +15,16 @@ class FileIO {
     bool fileExists = await file.exists();
     if (!fileExists) {
       await file.parent.create(recursive: true);
-      await file.writeAsString(jsonEncode(<String, int>{}));
+      await file.writeAsString(jsonEncode({}));
     }
   }
 
-  static Future<Map<String, int>> readSave() async {
+  static Future<Map<String, dynamic>> readSave() async {
     await _ensureSaveExists();
     File targetPath = await _filePath;
     String raw = await targetPath.readAsString();
     print(jsonDecode(raw));
-    return Map<String, int>.from(jsonDecode(raw));
+    return Map<String, dynamic>.from(jsonDecode(raw));
   }
 
   static Future<void> writeSave(MainState state) async {
