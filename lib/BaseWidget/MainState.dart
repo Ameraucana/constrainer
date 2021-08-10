@@ -1,5 +1,6 @@
 import 'package:constrainer/BaseWidget/FileIO.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class MainState with ChangeNotifier {
   Map<String, dynamic> content = {};
@@ -19,6 +20,16 @@ class MainState with ChangeNotifier {
       await FileIO.writeSave(this);
     } else {
       throw "Task by name '$key' does not exist";
+    }
+  }
+
+  Future<void> changeDeadlineTerm(String name, int term) async {
+    if (content.containsKey(name)) {
+      content[name]['deadlineTerm'] = term;
+      content[name]['deadlineAsMs'] =
+          DateTime.now().add(Duration(days: term)).millisecondsSinceEpoch;
+      notifyListeners();
+      await FileIO.writeSave(this);
     }
   }
 
@@ -59,7 +70,7 @@ class Task {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("$name is past due (${formatter(-msToDeadline)})."),
+              Text("$name is past due (${_formatter()})."),
               Row(),
               SizedBox(height: 15),
               ElevatedButton(
@@ -69,9 +80,10 @@ class Task {
             ]));
   }
 
-  ListTile asTile(void Function(String) renewCallback,
-      void Function(String) deleteCallback) {
-    List<Color> dangerLevelColors = getDangerLevelColor();
+  ListTile asTile(BuildContext context, void Function(String) renewCallback,
+      void Function(String) deleteCallback, MainState appState) {
+    List<Color> dangerLevelColors = _getDangerLevelColor();
+
     return ListTile(
       title: Text(
         name,
@@ -80,11 +92,54 @@ class Task {
           color: dangerLevelColors[1],
         ),
       ),
-      subtitle: Text(
-        formatter(msToDeadline),
-        maxLines: 1,
-        style:
-            TextStyle(color: dangerLevelColors[1], fontWeight: FontWeight.w400),
+      subtitle: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          TextButton(
+            child: Text(
+              _formatter(),
+              maxLines: 1,
+              style: TextStyle(
+                  color: dangerLevelColors[1], fontWeight: FontWeight.w400),
+            ),
+            onPressed: () => showDialog(
+                context: context,
+                builder: (context) {
+                  TextEditingController _dialogTextController =
+                      TextEditingController();
+                  return Dialog(
+                      child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text("Change deadline term length",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 30)),
+                      SizedBox(
+                        width: 450,
+                        child: TextField(
+                          autofocus: true,
+                          controller: _dialogTextController,
+                          decoration:
+                              InputDecoration(hintText: "$deadlineTerm days"),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          onEditingComplete: () {
+                            int? value =
+                                int.tryParse(_dialogTextController.text);
+                            if (value != null) {
+                              deadlineTerm = value;
+                              appState.changeDeadlineTerm(name, deadlineTerm);
+                            }
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      )
+                    ]),
+                  ));
+                }),
+          ),
+        ],
       ),
       leading: ElevatedButton(
         child: Text("Renew"),
@@ -102,7 +157,7 @@ class Task {
     );
   }
 
-  List<Color> getDangerLevelColor() {
+  List<Color> _getDangerLevelColor() {
     if (msToDeadline >= 2 * (deadlineTerm * Duration.millisecondsPerDay) / 3) {
       return [Colors.green, Colors.white];
     } else if (msToDeadline >=
@@ -112,23 +167,23 @@ class Task {
       return [Colors.red, Colors.white];
     }
   }
-}
 
-String formatter(int msToDeadline) {
-  int workingMs = msToDeadline;
-  int weeks = (workingMs / Duration.millisecondsPerDay / 7).floor();
-  workingMs -= weeks * Duration.millisecondsPerDay * 7;
+  String _formatter() {
+    int workingMs = msToDeadline;
+    int weeks = (workingMs / Duration.millisecondsPerDay / 7).floor();
+    workingMs -= weeks * Duration.millisecondsPerDay * 7;
 
-  int days = (workingMs / Duration.millisecondsPerDay).floor();
-  workingMs -= days * Duration.millisecondsPerDay;
+    int days = (workingMs / Duration.millisecondsPerDay).floor();
+    workingMs -= days * Duration.millisecondsPerDay;
 
-  int hours = (workingMs / Duration.millisecondsPerHour).floor();
-  workingMs -= hours * Duration.millisecondsPerHour;
+    int hours = (workingMs / Duration.millisecondsPerHour).floor();
+    workingMs -= hours * Duration.millisecondsPerHour;
 
-  int minutes = (workingMs / Duration.millisecondsPerMinute).floor();
-  workingMs -= minutes * Duration.millisecondsPerMinute;
+    int minutes = (workingMs / Duration.millisecondsPerMinute).floor();
+    workingMs -= minutes * Duration.millisecondsPerMinute;
 
-  int seconds = (workingMs / Duration.millisecondsPerSecond).floor();
+    int seconds = (workingMs / Duration.millisecondsPerSecond).floor();
 
-  return "${weeks > 0 ? weeks == 1 ? '$weeks week ' : '$weeks weeks ' : ''}${days > 0 ? days == 1 ? '$days day ' : '$days days ' : ''}${hours > 0 ? hours == 1 ? '$hours hour ' : '$hours hours ' : ''}${minutes > 0 ? minutes == 1 ? '$minutes minute ' : '$minutes minutes ' : ''}${seconds == 1 ? '$seconds second' : '$seconds seconds'}";
+    return "${weeks > 0 ? weeks == 1 ? '$weeks week ' : '$weeks weeks ' : ''}${days > 0 ? days == 1 ? '$days day ' : '$days days ' : ''}${hours > 0 ? hours == 1 ? '$hours hour ' : '$hours hours ' : ''}${minutes > 0 ? minutes == 1 ? '$minutes minute ' : '$minutes minutes ' : ''}${seconds == 1 ? '$seconds second' : '$seconds seconds'}";
+  }
 }

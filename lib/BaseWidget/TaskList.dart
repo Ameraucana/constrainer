@@ -30,8 +30,8 @@ class TaskListState extends State<TaskList> {
         return tasks[0].asContainer(appState.renewedTask);
       } else {
         return ListView.separated(
-          itemBuilder: (context, index) =>
-              tasks[index].asTile(appState.renewedTask, appState.remove),
+          itemBuilder: (context, index) => tasks[index]
+              .asTile(context, appState.renewedTask, appState.remove, appState),
           separatorBuilder: (context, index) => SizedBox(height: 10),
           itemCount: tasks.length,
         );
