@@ -16,6 +16,7 @@ class _NewTaskBoxState extends State<NewTaskBox> {
 
   @override
   Widget build(BuildContext context) {
+    FocusNode _nameNode = FocusNode(), _termNode = FocusNode();
     return Consumer<FocusNode>(builder: (context, rootNode, _) {
       MainState appState = Provider.of<MainState>(context);
       return RawKeyboardListener(
@@ -51,18 +52,21 @@ class _NewTaskBoxState extends State<NewTaskBox> {
               children: [
                 Expanded(
                   child: TextField(
-                    focusNode: FocusNode(),
+                    focusNode: _nameNode,
                     controller: _nameTextController,
                     decoration: InputDecoration(hintText: "Name of new task"),
+                    onTap: () => _nameNode.requestFocus(),
                     maxLines: 1,
                   ),
                 ),
                 SizedBox(width: 5),
                 Expanded(
                   child: TextField(
+                    focusNode: _termNode,
                     controller: _termTextController,
                     decoration: InputDecoration(
-                        hintText: "Day count to deadline (21 default)"),
+                        hintText: "Day count to deadline (default is 21)"),
+                    onTap: () => _termNode.requestFocus(),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
                 ),
