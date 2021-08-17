@@ -70,7 +70,7 @@ class Task {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("$name is past due (${_formatter()})."),
+              Text("$name is past due."),
               Row(),
               SizedBox(height: 15),
               ElevatedButton(
