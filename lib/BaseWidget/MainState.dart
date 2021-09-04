@@ -147,7 +147,7 @@ class Task {
       ),
       trailing: OutlinedButton(
         style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Colors.white70),
+            backgroundColor: MaterialStateProperty.all(Colors.white),
             foregroundColor: MaterialStateProperty.all(Colors.red)),
         child: Text("Delete"),
         onPressed: () => deleteCallback(name),
