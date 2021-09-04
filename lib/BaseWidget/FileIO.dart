@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:constrainer/BaseWidget/MainState.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class FileIO {
@@ -14,10 +12,8 @@ class FileIO {
   }
 
   static Future<Map<String, dynamic>> readSave() async {
-    print(await _apiKey);
     http.Response response = await http.get(Uri.parse("$_endpoint/latest"),
         headers: {"X-Master-Key": await _apiKey, "X-Bin-Meta": "false"});
-    print(response);
     return Map<String, dynamic>.from(json.decode(response.body));
   }
 
