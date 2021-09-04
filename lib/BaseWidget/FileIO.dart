@@ -1,35 +1,32 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:constrainer/BaseWidget/MainState.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class FileIO {
-  static Future<File> get _filePath async {
-    Directory docs = await getApplicationDocumentsDirectory();
-    return File(path.join(docs.path, "constrainer_data", "save.json"));
-  }
+  static const String _endpoint =
+      r"https://api.jsonbin.io/v3/b/6133055e0825d31d4ed8a107";
 
-  static Future<void> _ensureSaveExists() async {
-    File file = await _filePath;
-    bool fileExists = await file.exists();
-    if (!fileExists) {
-      await file.parent.create(recursive: true);
-      await file.writeAsString(jsonEncode({}));
-    }
+  static Future<String> get _apiKey async {
+    return await rootBundle.loadString('assets/api_key');
   }
 
   static Future<Map<String, dynamic>> readSave() async {
-    await _ensureSaveExists();
-    File targetPath = await _filePath;
-    String raw = await targetPath.readAsString();
-    print(jsonDecode(raw));
-    return Map<String, dynamic>.from(jsonDecode(raw));
+    print(await _apiKey);
+    http.Response response = await http.get(Uri.parse("$_endpoint/latest"),
+        headers: {"X-Master-Key": await _apiKey, "X-Bin-Meta": "false"});
+    print(response);
+    return Map<String, dynamic>.from(json.decode(response.body));
   }
 
   static Future<void> writeSave(MainState state) async {
-    await _ensureSaveExists();
-    File targetPath = await _filePath;
-    await targetPath.writeAsString(jsonEncode(state.content));
+    await http.put(Uri.parse(_endpoint),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": await _apiKey
+        },
+        body: json.encode(state.content));
   }
 }
