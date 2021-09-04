@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:constrainer/BaseWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:amplify_flutter/amplify.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+
+import 'amplifyconfiguration.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,6 +20,22 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _configureAmplify();
+  }
+
+  void _configureAmplify() async {
+    await Amplify.addPlugins([AmplifyAuthCognito(), AmplifyStorageS3()]);
+
+    try {
+      Amplify.configure(amplifyconfig);
+    } on AmplifyAlreadyConfiguredException {
+      print("Amplify is already configured.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
